@@ -3,6 +3,8 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const child = require('child_process');
+
+// headers that cloudfront does not allow in the http response
 const blacklistedHeaders = [
     /^connection$/i,
     /^content-length$/i,
@@ -42,6 +44,7 @@ exports.handler = (event, context, callback) => {
     const width = Math.min(options.width || maxSize, maxSize);
     const height = Math.min(options.height || maxSize, maxSize);
 
+    // make sure input values are numbers
     if (Number.isNaN(width) || Number.isNaN(height)) {
         context.succeed({
             status: '400',
@@ -50,10 +53,16 @@ exports.handler = (event, context, callback) => {
         return;
     }
 
+    // dowload file from the origin server
     getFile(`${origin.protocol}://${origin.domainName}${origin.path}${request.uri}`, (res) => {
         const statusCode = res.statusCode;
         console.log(res.headers);
+
+        // grap headers from the origin request and reformat them
+        // to match the lambda@edge return format
         const originHeaders = Object.keys(res.headers)
+        // some headers we get back from the origin
+        // must be filtered out because they are blacklisted by cloudfront
         .filter((header) => blacklistedHeaders.every((blheader) => !blheader.test(header)))
         .reduce((acc, header) => {
             acc[header.toLowerCase()] = [
@@ -81,10 +90,10 @@ exports.handler = (event, context, callback) => {
                 console.log('image downloaded');
 
                 try {
+                    // invoke ImageMagick to resize the image
                     const stdout = child.execSync(
                         `convert ${tmpPath} -resize ${width}x${height}\\> -quality 80 -unsharp 0x1 ${targetPath}`
                     );
-                    console.log(stdout.toString());
                 } catch(e) {
                     console.log(e.stderr.toString());
                     context.succeed({
@@ -112,6 +121,8 @@ exports.handler = (event, context, callback) => {
                 });
             })
         } else {
+            // grap the status code from the origin request
+            // and return to the viewer
             console.log('statusCode: ', statusCode);
             context.succeed({
                 status: statusCode.toString(),
