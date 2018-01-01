@@ -42,6 +42,14 @@ exports.handler = (event, context, callback) => {
     const width = Math.min(options.width || maxSize, maxSize);
     const height = Math.min(options.height || maxSize, maxSize);
 
+    if (Number.isNaN(width) || Number.isNaN(height)) {
+        context.succeed({
+            status: '400',
+            statusDescription: 'Invalid input'
+        });
+        return;
+    }
+
     getFile(`${origin.protocol}://${origin.domainName}${origin.path}${request.uri}`, (res) => {
         const statusCode = res.statusCode;
         console.log(res.headers);
