@@ -53,12 +53,12 @@ exports.handler = (event, context, callback) => {
         return;
     }
 
-    // dowload file from the origin server
+    // dowload the file from the origin server
     getFile(`${origin.protocol}://${origin.domainName}${origin.path}${request.uri}`, (res) => {
         const statusCode = res.statusCode;
         console.log(res.headers);
 
-        // grap headers from the origin request and reformat them
+        // grab headers from the origin request and reformat them
         // to match the lambda@edge return format
         const originHeaders = Object.keys(res.headers)
         // some headers we get back from the origin
