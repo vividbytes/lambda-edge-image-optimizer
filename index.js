@@ -46,6 +46,7 @@ exports.handler = (event, context, callback) => {
 
     // make sure input values are numbers
     if (Number.isNaN(width) || Number.isNaN(height)) {
+        console.log('Invalid input');
         context.succeed({
             status: '400',
             statusDescription: 'Invalid input'
@@ -95,6 +96,7 @@ exports.handler = (event, context, callback) => {
                         `convert ${tmpPath} -resize ${width}x${height}\\> -quality 80 ${targetPath}`
                     );
                 } catch(e) {
+                    console.log('ImageMagick error');
                     console.log(e.stderr.toString());
                     context.succeed({
                       status: '500',
