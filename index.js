@@ -40,7 +40,7 @@ exports.handler = (event, context, callback) => {
         http.get;
 
     const options = querystring.parse(request.querystring);
-    const maxSize = 2500;
+    const maxSize = 2000;
     const width = Math.min(options.width || maxSize, maxSize);
     const height = Math.min(options.height || maxSize, maxSize);
 
@@ -92,7 +92,7 @@ exports.handler = (event, context, callback) => {
                 try {
                     // invoke ImageMagick to resize the image
                     const stdout = child.execSync(
-                        `convert ${tmpPath} -resize ${width}x${height}\\> -quality 80 -unsharp 0x1 ${targetPath}`
+                        `convert ${tmpPath} -resize ${width}x${height}\\> -quality 80 ${targetPath}`
                     );
                 } catch(e) {
                     console.log(e.stderr.toString());
